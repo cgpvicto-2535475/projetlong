@@ -9,7 +9,6 @@ from mysql.connector import errorcode
 load_dotenv()
 
 app = Flask(__name__)
-# Flask signe la session qui contient le brouillon de la commande.
 app.secret_key = os.getenv("SECRET_KEY") or secrets.token_hex(32)
 
 
@@ -27,18 +26,11 @@ def connecter_bd():
 @app.errorhandler(mysql.connector.Error)
 def erreur_mysql(erreur):
     app.logger.error("Erreur MySQL %s", erreur.errno)
-    if erreur.errno in (errorcode.ER_BAD_FIELD_ERROR, errorcode.ER_NO_SUCH_TABLE):
-        message = (
-            "Le schéma MySQL ne correspond pas à cette version de la pizzeria. "
-            "Pour une ancienne base, sauvegarde-la avant d'exécuter sql/projetlong_migration.sql."
-        )
-    else:
-        message = "La base de données est indisponible. Réessaie dans un instant."
+    message = "Une erreur de base de données est survenue."
     return render_template("erreur.html", erreur=message), 503
 
 
 def catalogue():
-    """Lit les options de pizza et associe chaque identifiant à son nom."""
     db = connecter_bd()
     curseur = None
     try:
@@ -59,7 +51,6 @@ def catalogue():
 
 
 def valider(formulaire, croutes, sauces, garnitures):
-    """Renvoie les choix saisis et un message si une valeur est invalide."""
     garnitures_saisies = formulaire.getlist("garnitures")
     choix = {
         "nom_client": formulaire.get("nom_client", "").strip(),
@@ -84,7 +75,6 @@ def valider(formulaire, croutes, sauces, garnitures):
 
     if len(garnitures_saisies) > 4:
         return choix, "Choisis au maximum quatre garnitures."
-    # Flask ignore les valeurs qu'il ne peut pas convertir en entier.
     if len(garnitures_saisies) != len(choix["garnitures"]):
         return choix, "Garniture inconnue."
     garnitures_vues = []
@@ -153,7 +143,6 @@ def modifier():
 
 
 def enregistrer(choix, confirmation):
-    """Enregistre le client, la pizza, ses garnitures et la commande ensemble."""
     db = connecter_bd()
     curseur = None
     try:
@@ -191,7 +180,6 @@ def enregistrer(choix, confirmation):
             })
             position += 1
 
-        # Le déclencheur MySQL ajoute la livraison au moment de cet INSERT.
         requete = """
             INSERT INTO commandes (client_id, pizza_id, quantite, confirmation)
             VALUES (%(client_id)s, %(pizza_id)s, %(quantite)s, %(confirmation)s)
@@ -212,7 +200,6 @@ def enregistrer(choix, confirmation):
         if erreur.errno == errorcode.ER_NO_REFERENCED_ROW_2:
             return None
         if curseur is not None and erreur.errno == errorcode.ER_DUP_ENTRY:
-            # Si le même formulaire a déjà été confirmé, retrouver sa commande.
             requete = "SELECT id FROM commandes WHERE confirmation = %(confirmation)s"
             curseur.execute(requete, {"confirmation": confirmation})
             commande = curseur.fetchone()
@@ -278,7 +265,6 @@ def livraisons():
 
 @app.route("/livraisons/<int:commande_id>/terminer", methods=["POST"])
 def terminer_livraison(commande_id):
-    """Retire la livraison de la file et conserve la commande dans MySQL."""
     jeton = session.get("jeton_livraison")
     if not jeton or request.form.get("jeton") != jeton:
         return render_template("erreur.html", erreur="Ouvre la liste des livraisons et réessaie."), 400

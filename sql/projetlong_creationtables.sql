@@ -1,4 +1,3 @@
--- Installation neuve seulement. Pour une base existante, utiliser projetlong_migration.sql.
 CREATE DATABASE IF NOT EXISTS projet_long;
 USE projet_long;
 
@@ -66,7 +65,6 @@ CREATE TABLE IF NOT EXISTS commandes(
 CREATE TABLE IF NOT EXISTS garnitures_pizza(
 	pizza_id INT NOT NULL,
     garniture_id INT NOT NULL,
-    -- Quatre emplacements par pizza, même pour les insertions faites hors de Flask.
     position_garniture TINYINT NOT NULL,
     CONSTRAINT chk_position_garniture CHECK (position_garniture BETWEEN 1 AND 4),
     CONSTRAINT uq_position_garniture UNIQUE (pizza_id, position_garniture),
