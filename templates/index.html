@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>Pizzeria - Projet long BD2</title></head>
+<body>
+<h1>Bienvenue à notre pizzeria !</h1>
+<a href="{{ url_for('livraisons') }}">Livraisons en attente</a>
+{% for message in get_flashed_messages() %}<p role="status">{{ message }}</p>{% endfor %}
+{% if erreur %}<p role="alert">{{ erreur }}</p>{% endif %}
+<form method="post">
+  <fieldset><legend>Coordonnées du client</legend>
+    <p><label>Nom <input name="nom_client" maxlength="50" autocomplete="name" required value="{{ choix.nom_client }}"></label></p>
+    <p><label>Téléphone <input type="tel" name="numero_telephone" maxlength="20" autocomplete="tel" required value="{{ choix.numero_telephone }}"></label></p>
+    <p><label>Adresse de livraison <input name="adresse_livraison" maxlength="100" autocomplete="street-address" required value="{{ choix.adresse_livraison }}"></label></p>
+  </fieldset>
+  <fieldset><legend>Pizza personnalisée</legend>
+    <p><label>Croûte <select name="croute_id" required><option value="">Choisir</option>
+      {% for id, nom in croutes.items() %}<option value="{{ id }}" {% if choix.get('croute_id', 0)|int == id %}selected{% endif %}>{{ nom }}</option>{% endfor %}
+    </select></label></p>
+    <p><label>Sauce <select name="sauce_id" required><option value="">Choisir</option>
+      {% for id, nom in sauces.items() %}<option value="{{ id }}" {% if choix.get('sauce_id', 0)|int == id %}selected{% endif %}>{{ nom }}</option>{% endfor %}
+    </select></label></p>
+    <fieldset><legend>Garnitures (maximum quatre)</legend>
+      {% for id, nom in garnitures.items() %}
+      <label><input type="checkbox" name="garnitures" value="{{ id }}" {% if id in choix.get('garnitures', []) %}checked{% endif %}>{{ nom }}</label>
+      {% endfor %}
+      <p><output id="compte-garnitures" aria-live="polite"></output></p>
+    </fieldset>
+    <p><label>Nombre de pizzas identiques <input type="number" name="quantite" min="1" max="2147483647" step="1" required value="{{ choix.get('quantite', 1) }}"></label></p>
+  </fieldset>
+  <button>Voir le résumé</button>
+</form>
+<script>
+  const cases = document.querySelectorAll('input[name="garnitures"]');
+  function actualiserGarnitures() {
+    let nombre = 0;
+    for (const caseOption of cases) {
+      if (caseOption.checked) {
+        nombre += 1;
+      }
+    }
+    document.getElementById('compte-garnitures').textContent = nombre + ' sur 4 sélectionnées';
+    for (const caseOption of cases) {
+      caseOption.disabled = nombre >= 4 && !caseOption.checked;
+    }
+  }
+  for (const caseOption of cases) {
+    caseOption.addEventListener('change', actualiserGarnitures);
+  }
+  window.addEventListener('pageshow', actualiserGarnitures);
+</script>
+</body></html>

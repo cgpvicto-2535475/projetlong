@@ -1,4 +1,4 @@
-DROP DATABASE IF EXISTS projet_long;
+-- Installation neuve seulement. Pour une base existante, utiliser projetlong_migration.sql.
 CREATE DATABASE IF NOT EXISTS projet_long;
 USE projet_long;
 
@@ -52,6 +52,11 @@ CREATE TABLE IF NOT EXISTS commandes(
 	id INT AUTO_INCREMENT NOT NULL,
     date_commande DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     client_id INT NOT NULL,
+    pizza_id INT NOT NULL,
+    quantite INT NOT NULL,
+    confirmation CHAR(32) UNIQUE,
+    CONSTRAINT chk_commandes_quantite CHECK (quantite > 0),
+    CONSTRAINT fk_commandes_pizzas FOREIGN KEY (pizza_id) REFERENCES pizzas(id),
     
     CONSTRAINT pk_commandes PRIMARY KEY (id),
     
@@ -61,32 +66,16 @@ CREATE TABLE IF NOT EXISTS commandes(
 CREATE TABLE IF NOT EXISTS garnitures_pizza(
 	pizza_id INT NOT NULL,
     garniture_id INT NOT NULL,
+    -- Quatre emplacements par pizza, même pour les insertions faites hors de Flask.
+    position_garniture TINYINT NOT NULL,
+    CONSTRAINT chk_position_garniture CHECK (position_garniture BETWEEN 1 AND 4),
+    CONSTRAINT uq_position_garniture UNIQUE (pizza_id, position_garniture),
     
     CONSTRAINT pk_garnitures_pizza PRIMARY KEY (pizza_id, garniture_id),
 
     CONSTRAINT fk_garnitures_pizza_pizzas FOREIGN KEY (pizza_id) REFERENCES pizzas(id),
 
     CONSTRAINT fk_garnitures_pizza_garnitures FOREIGN KEY (garniture_id) REFERENCES garnitures(id)
-);
-
-CREATE TABLE IF NOT EXISTS commandes_pizza(
-	commande_id INT NOT NULL,
-    pizza_id INT NOT NULL,
-    quantite INT NOT NULL,
-
-    CONSTRAINT pk_commandes_pizza
-        PRIMARY KEY (commande_id, pizza_id),
-
-    CONSTRAINT fk_commandes_pizza_commandes
-        FOREIGN KEY (commande_id)
-        REFERENCES commandes(id),
-
-    CONSTRAINT fk_commandes_pizza_pizzas
-        FOREIGN KEY (pizza_id)
-        REFERENCES pizzas(id),
-
-    CONSTRAINT chk_quantite
-        CHECK (quantite > 0)
 );
 
 CREATE TABLE IF NOT EXISTS livraisons_en_attente (

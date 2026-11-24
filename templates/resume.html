@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>Résumé de la commande</title></head>
+<body>
+<h1>Résumé de la commande</h1>
+<p>{{ choix.nom_client }} · {{ choix.numero_telephone }}<br>{{ choix.adresse_livraison }}</p>
+<p>Quantité : {{ choix.quantite }}<br>Croûte : {{ croutes[choix.croute_id] }}<br>Sauce : {{ sauces[choix.sauce_id] }}</p>
+<p>Garnitures : {% for id in choix.garnitures %}{{ garnitures[id] }}{% if not loop.last %}, {% endif %}{% else %}Aucune{% endfor %}</p>
+<form action="{{ url_for('confirmer') }}" method="post">
+  <input type="hidden" name="confirmation" value="{{ session.confirmation }}">
+  <button formaction="{{ url_for('modifier') }}">Modifier la commande</button>
+  <button type="submit">Confirmer la commande</button>
+</form>
+</body></html>

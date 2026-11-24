@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>Erreur - Pizzeria</title>
+</head>
+<body>
+  <h1>Une erreur est survenue</h1>
+  <p role="alert">{{ erreur }}</p>
+  <a href="{{ url_for('index') }}">Retour au formulaire de commande</a>
+  <a href="{{ url_for('livraisons') }}">Livraisons en attente</a>
+</body>
+</html>

@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>Livraisons en attente</title></head>
+<body>
+<h1>Livraisons en attente</h1>
+<a href="{{ url_for('index') }}">Nouvelle commande</a>
+{% for message in get_flashed_messages() %}<p role="status">{{ message }}</p>{% endfor %}
+{% for livraison in livraisons %}
+<article>
+  <h2>Commande nº {{ livraison.id }}</h2>
+  <p>Reçue le {{ livraison.date_ajout }}<br>{{ livraison.nom_client }} · {{ livraison.numero_telephone }}<br>{{ livraison.adresse_livraison }}</p>
+  <p>Quantité : {{ livraison.quantite }}<br>Croûte : {{ livraison.nom_croute }}<br>Sauce : {{ livraison.nom_sauce }}<br>Garnitures : {{ livraison.garnitures or 'Aucune' }}</p>
+  <form action="{{ url_for('terminer_livraison', commande_id=livraison.id) }}" method="post">
+    <input type="hidden" name="jeton" value="{{ session.jeton_livraison }}">
+    <button>Marquer comme livrée</button>
+  </form>
+</article>
+{% else %}<p>Aucune livraison en attente.</p>{% endfor %}
+</body></html>
